@@ -49,9 +49,9 @@ for line in proc.stdout:
                 if line[start + end: start + end + 4] == '.exe' or line[start + end: start + end + 4] == '.EXE':
                     path = line[start: start + end + 4]
                     break
+    if path == '': continue
     words = line.split()
-    if len(words) > 1:
-        newProcess = process(words[0], path)
+    newProcess = process(words[0], path)
 
     processList.append(newProcess)
 
@@ -59,9 +59,6 @@ for line in proc.stdout:
 processList = processList[1:]
 for item in processList:
     print(item.getValues())
-#
-# for service in list(psutil.win_service_iter()):
-#     print(service.as_dict())
 
 for service in psutil.win_service_iter():
     sinfo = service.as_dict()
