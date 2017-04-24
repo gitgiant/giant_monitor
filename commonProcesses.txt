@@ -1,0 +1,11 @@
+taskhost.exe,C:\Windows\system32\taskhost.exe
+dwm.exe,C:\Windows\system32\Dwm.exe
+explorer.exe,C:\Windows\Explorer.EXE
+msseces.exe,C:\Program Files\Microsoft Security Client\msseces.exe
+wuauclt.exe,C:\Windows\system32\wuauclt.exe
+conhost.exe,C:\Windows\system32\conhost.exe
+chrome.exe,C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+mstsc.exe,C:\Windows\system32\mstsc.exe
+conhost.exe,:\Windows\system32\conhost.exe
+cmd.exe,C:\Windows\system32\cmd.exe
+WMIC.exe,C:\Windows\System32\Wbem\WMIC.exe
