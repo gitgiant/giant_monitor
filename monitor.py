@@ -1,85 +1,68 @@
+#!/usr/bin/python
 import subprocess
 import os
-# from psutil import *
-# import psutil
 import getpass
-
+import ctypes
 
 currentUser = getpass.getuser()
-print(currentUser)
 currentDrive = os.environ['SYSTEMDRIVE']
-print(currentDrive)
 
-class process:
-
-    def __init__(self, name, PID, path):
-        self.name = name
-        self.PID = PID
-        self.path = path
-
-    def getName(self):
-        return self.name
-
-    def getPID(self):
-        return self.PID
-
-    def getPath(self):
-        return self.path
-    def getValues(self):
-        return [self.name, self.PID, self.path]
-
-
-class process:
-
-    def __init__(self, name, path):
-        self.name = name
-        self.path = path
-
-    def getName(self):
-        return self.name
-
-    def getPath(self):
-        return self.path
-
-    def getValues(self):
-        return [self.name, self.path]
+# Message Box
+def Mbox(title, text, style):
+    return ctypes.windll.user32.MessageBoxW(0, text, title, style)
 
 
 if __name__ == "__main__":
     cmd = 'WMIC PROCESS get Caption,Processid,ExecutablePath'
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    commonDict = {}
+    defaultDict = {}
+    # Load commonProcesses.txt into a dictionary
     with open('commonProcesses.txt', 'r') as commonFile:
         for line in commonFile:
             line = line.split(',')
-            commonDict[line[0]] = line[1]
-    print(commonDict)
+            defaultDict[line[0]] = line[1]
 
-    processList = []
-    f = open('processList.txt', 'a+')
+    serviceList = []
+
     for line in proc.stdout:
         line = line.decode("utf-8")
         path = str()
+        filename = str()
+        # Read through a line and extract the filename and filepath, if there is no path then it is a service
         for start in range(0, len(line)):
-            # if we have a start of a file path
-            if line[start:start + 2] == 'C:':
+            # skip the first line
+            if "Caption" and "ExecutablePath" in line:
+                continue
+            # TODO: Extract filename with spaces
+            # if we have a filename (ends with .exe)
+            # if line[start:start+4] == '.exe':
+            #     filename = line[0:start+4]
+            #     print(filename)
+            # if we have a start of a file path (starts with <currentDrive>:)
+            if line[start:start + 2] == currentDrive:
                 # windows maximum file path length is 260 TODO: account for //
                 for end in range(0, 260):
                     if line[start + end: start + end + 4] == '.exe' or line[start + end: start + end + 4] == '.EXE':
                         path = line[start: start + end + 4]
                         break
+
         # TODO: get paths of services
-        if path == '': continue
+        if path == '':
+            words = line.split()
+            serviceList.append(words)
+            continue
         words = line.split()
-        newProcess = process(words[0], path)
-        processList.append(newProcess)
-
-    #snip off header
-    processList = processList[1:]
-    for item in processList:
-        print(item.getValues())
-
-# for service in psutil.win_service_iter():
-#     sinfo = service.as_dict()
-#     print("Name: {} Display name: {} Status: {} Type: {} Path: ".format(repr(sinfo["name"]), repr(sinfo["display_name"]), repr(sinfo["status"]), repr(sinfo["start_type"]), sinfo["binpath"]))
-#     print(repr(sinfo["binpath"]))
+        # check common paths for any replacements
+        # If we have a common Process
+        if words[0] in defaultDict:
+            defaultPath = defaultDict[words[0]].rstrip('\n')
+            if path != defaultPath:
+                print("Replaced Running Process Detected!")
+                print("File Name: " + words[0])
+                print("File Path: " + path)
+                print("Default Path: " + defaultPath)
+                # Mbox returns 6 if user selects yes
+                if (Mbox('Replaced Running Process Detected!', 'File Name: ' + words[0] + '\nFile Path: ' + path + '\nDefault Path: ' + defaultPath + '\nWould you like to upload this file to Virus Total?', 4)) == 6:
+                    print("YES")
+                else:
+                    print("NO")
